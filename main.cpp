@@ -2,19 +2,18 @@
 using namespace std;
 
 vector<int> manacher(vector<int> &arr){
-    vector<int> m(2 * arr.size() + 1, -1);
-    vector<int> max_len(2 * arr.size() + 1, 0);
     int n = arr.size();
-    int idx = 0;
-    for(int i = 0; i < n; i++){
-        m[idx++] = -1; 
-        m[idx++] = arr[i];
-    }
-    m[idx++] = -1;
+    int manacher_len = n * 2 + 1;
+    vector<int> m(manacher_len, -1);
+    vector<int> max_len(manacher_len);
+    for(int i = 0; i < n; i++) m[2 * i + 1] = arr[i]; 
 
-    for(int i = 0, l = 0, r = -1; i < idx; i++) {
+    for(int i = 0, l = 0, r = -1; i < manacher_len; i++) {
 		max_len[i] = (i <= r ? min(max_len[2 * l - i], r - i) : 0);
-		while(i - max_len[i] >= 0 && i + max_len[i] < idx && m[i - max_len[i]] == m[i + max_len[i]]) max_len[i]++;
+		while( i - max_len[i] >= 0 
+            && i + max_len[i] < manacher_len 
+            && m[i - max_len[i]] == m[i + max_len[i]]
+        ) max_len[i]++;
 		max_len[i]--;
 		if(i + max_len[i] > r) l = i, r = i + max_len[i];
 	}
