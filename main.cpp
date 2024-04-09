@@ -21,7 +21,7 @@ vector<int> manacher(vector<int> &arr){
     return max_len;
 }
 
-vector<int> get_maxr(vector<int> &max_len) {
+vector<int> get_maxl(vector<int> &max_len) {
     vector<int> ans(max_len.size() / 2);
     queue<pair<int, int>> q;
     int n = ans.size();
@@ -40,7 +40,13 @@ vector<int> get_maxr(vector<int> &max_len) {
     return ans;
 }
 
-vector<int> longest_two_palindrome(vector<int> &arr, vector<int> &maxl, vector<int> &maxr){
+vector<int> longest_two_palindrome(vector<int> &arr){
+    vector<int> max_len = manacher(arr);
+    vector<int> maxl = get_maxl(max_len);
+    reverse(max_len.begin(), max_len.end());
+    vector<int> maxr = get_maxl(max_len);
+    reverse(maxr.begin(), maxr.end());
+
     int n = arr.size();
     pair<int, int> max_length {-1, -1}; // first: length, second: begin index
     for (int i = 0; i < n; i++) {
@@ -58,13 +64,8 @@ int main(){
     vector<int> arr;
     while(cin >> tmp) arr.push_back(tmp);
     
-    vector<int> max_len = manacher(arr);
-    vector<int> ansl = get_maxr(max_len);
-    reverse(max_len.begin(), max_len.end());
-    vector<int> ansr = get_maxr(max_len);
-    reverse(ansr.begin(), ansr.end());
+    vector<int> answer = longest_two_palindrome(arr);
 
-    vector<int> answer = longest_two_palindrome(arr, ansl, ansr);
     for (int i = 0; i < (int) answer.size(); i++) {
         cout << answer[i];
         if (i != (int) answer.size() - 1) cout << " ";
