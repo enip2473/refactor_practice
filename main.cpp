@@ -1,62 +1,59 @@
 #include<bits/stdc++.h>
 using namespace std;
 
-int arr[105], ansl[105], ansr[105], m[205], max_len[205];
-
-// ansl[i] : 以 i 為左端點的最長回文
-// ansr[i] : 以 i 為右端點的最長回文
-
-const int INF = -1;
-void manacher(int n){
+vector<int> manacher(vector<int> &arr){
+    vector<int> m(2 * arr.size() + 1, -1);
+    vector<int> max_len(2 * arr.size() + 1, 0);
+    int n = arr.size();
     int idx = 0;
-    for(int i = 1; i <= n; i++){
-        idx++;
-        m[idx] = INF; 
-        idx++;
-        m[idx] = arr[i];
+    for(int i = 0; i < n; i++){
+        m[idx++] = -1; 
+        m[idx++] = arr[i];
     }
-    idx++;
-    m[idx] = INF;
+    m[idx++] = -1;
 
-    for(int i = 1, l = 0, r = -1; i <= idx; i++) {
+    for(int i = 0, l = 0, r = -1; i < idx; i++) {
 		max_len[i] = (i <= r ? min(max_len[2 * l - i], r - i) : 0);
-		while(i - max_len[i] >= 1 && i + max_len[i] <= idx && m[i - max_len[i]] == m[i + max_len[i]]) max_len[i]++;
+		while(i - max_len[i] >= 0 && i + max_len[i] < idx && m[i - max_len[i]] == m[i + max_len[i]]) max_len[i]++;
 		max_len[i]--;
 		if(i + max_len[i] > r) l = i, r = i + max_len[i];
 	}
+
+    return max_len;
 }
 
 int main(){
-    int tmp, n = 0;
-    while(scanf("%d", &tmp) != EOF){
-        n++;
-        arr[n] = tmp; 
-    }
+    int tmp;
+    vector<int> arr;
+    while(cin >> tmp) arr.push_back(tmp);
     
-    manacher(n);
+    int n = arr.size();
+    vector<int> ansl(n), ansr(n);
+    vector<int> max_len = manacher(arr);
+
 
     queue<pair<int, int>> q;
     // first 存放中點位置, second 存放以中點為回文中心能達到的最右位置
     // 因為是 manacher 後的陣列，i - q.front().first (中點) + 1 即為回文長度
-    for(int i = 1; i <= 2 * n + 1; i++){
+    for(int i = 0; i < 2 * n + 1; i++){
         while(!q.empty() && q.front().second < i) q.pop();
-        if(i % 2 == 0){
+        if(i % 2 == 1){
             if(q.empty()) ansr[i / 2] = 1;
-            else ansr[i / 2] = i - q.front().first + 1;
+            else ansr[i / 2] = (i - q.front().first + 1);
         }
         if(q.empty() || i + max_len[i] > q.back().second){
             q.push({i, i + max_len[i]});
         }
     }
 
-    reverse(max_len + 1, max_len + 2 * n + 2);
+    reverse(max_len.begin(), max_len.end());
 
     while(!q.empty()) q.pop();
-    for(int i = 1; i <= 2 * n + 1; i++){
+    for(int i = 0; i < 2 * n + 1; i++){
         while(!q.empty() && q.front().second < i) q.pop();
-        if(i % 2 == 0){
-            if(q.empty()) ansl[n + 1 - (i / 2)] = 1;
-            else ansl[n + 1 - (i / 2)] = i - q.front().first + 1;
+        if(i % 2 == 1){
+            if(q.empty()) ansl[n - (i / 2) - 1] = 1;
+            else ansl[n - (i / 2) - 1] = (i - q.front().first + 1);
         }
         if(q.empty() || i + max_len[i] > q.back().second){
             q.push({i, i + max_len[i]});
@@ -64,7 +61,7 @@ int main(){
     }    
     // 枚舉相鄰兩項作為第一回文結尾與第二回文頭
     int al = -1, ar = -1;
-    for(int i = 1; i <= n; i++){
+    for(int i = 0; i < n - 1; i++){
         if(ansr[i] + ansl[i+1] > ar - al + 1){
             al = i - ansr[i] + 1;
             ar = i + ansl[i+1];
@@ -74,6 +71,8 @@ int main(){
             ar = i + ansl[i+1];
         }
     }
+
+    if (ansr[n - 1] >= ar - al + 1) al = n - ansr[n - 1], ar = n - 1;
 
     for(int i = al; i <= ar; i++){
         if(i != al) printf(" ");
