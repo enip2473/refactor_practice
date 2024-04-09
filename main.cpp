@@ -40,38 +40,34 @@ vector<int> get_maxr(vector<int> &max_len) {
     return ans;
 }
 
+vector<int> longest_two_palindrome(vector<int> &arr, vector<int> &maxl, vector<int> &maxr){
+    int n = arr.size();
+    pair<int, int> max_length {-1, -1}; // first: length, second: begin index
+    for (int i = 0; i < n; i++) {
+        pair<int, int> new_length {maxl[i] + maxr[i + 1], i - maxl[i] + 1};
+        max_length = max(max_length, new_length);
+    }
+    auto answer_begin = arr.begin() + max_length.second;
+    auto answer_end = arr.begin() + max_length.second + max_length.first;
+    vector<int> answer(answer_begin, answer_end);
+    return answer;
+}
+
 int main(){
     int tmp;
     vector<int> arr;
     while(cin >> tmp) arr.push_back(tmp);
     
-    int n = arr.size();
     vector<int> max_len = manacher(arr);
-    vector<int> ansr = get_maxr(max_len);
-    reverse(max_len.begin(), max_len.end());
     vector<int> ansl = get_maxr(max_len);
-    reverse(ansl.begin(), ansl.end());
+    reverse(max_len.begin(), max_len.end());
+    vector<int> ansr = get_maxr(max_len);
+    reverse(ansr.begin(), ansr.end());
 
-    // ansr[i] : 以 i 為右界的最長回文
-
-    // 枚舉相鄰兩項作為第一回文結尾與第二回文頭
-    int al = -1, ar = -1;
-    for(int i = 0; i < n - 1; i++){
-        if(ansr[i] + ansl[i+1] > ar - al + 1){
-            al = i - ansr[i] + 1;
-            ar = i + ansl[i+1];
-        }
-        else if(ansr[i] + ansl[i+1] == ar - al + 1 && i - ansr[i] + 1 > al){
-            al = i - ansr[i] + 1;
-            ar = i + ansl[i+1];
-        }
+    vector<int> answer = longest_two_palindrome(arr, ansl, ansr);
+    for (int i = 0; i < (int) answer.size(); i++) {
+        cout << answer[i];
+        if (i != (int) answer.size() - 1) cout << " ";
+        else cout << '\n';
     }
-
-    if (ansr[n - 1] >= ar - al + 1) al = n - ansr[n - 1], ar = n - 1;
-
-    for(int i = al; i <= ar; i++){
-        if(i != al) printf(" ");
-        printf("%d", arr[i]);
-    }
-    printf("\n");
 }
