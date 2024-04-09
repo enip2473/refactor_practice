@@ -18,8 +18,26 @@ vector<int> manacher(vector<int> &arr){
 		max_len[i]--;
 		if(i + max_len[i] > r) l = i, r = i + max_len[i];
 	}
-
     return max_len;
+}
+
+vector<int> get_maxr(vector<int> &max_len) {
+    vector<int> ans(max_len.size() / 2);
+    queue<pair<int, int>> q;
+    int n = ans.size();
+    // first 存放中點位置, second 存放以中點為回文中心能達到的最右位置
+    // 因為是 manacher 後的陣列，i - q.front().first (中點) + 1 即為回文長度
+    for(int i = 0; i < 2 * n + 1; i++){
+        while(!q.empty() && q.front().second < i) q.pop();
+        if(i % 2 == 1){
+            if(q.empty()) ans[i / 2] = 1;
+            else ans[i / 2] = (i - q.front().first + 1);
+        }
+        if(q.empty() || i + max_len[i] > q.back().second){
+            q.push({i, i + max_len[i]});
+        }
+    }
+    return ans;
 }
 
 int main(){
@@ -28,37 +46,14 @@ int main(){
     while(cin >> tmp) arr.push_back(tmp);
     
     int n = arr.size();
-    vector<int> ansl(n), ansr(n);
     vector<int> max_len = manacher(arr);
-
-
-    queue<pair<int, int>> q;
-    // first 存放中點位置, second 存放以中點為回文中心能達到的最右位置
-    // 因為是 manacher 後的陣列，i - q.front().first (中點) + 1 即為回文長度
-    for(int i = 0; i < 2 * n + 1; i++){
-        while(!q.empty() && q.front().second < i) q.pop();
-        if(i % 2 == 1){
-            if(q.empty()) ansr[i / 2] = 1;
-            else ansr[i / 2] = (i - q.front().first + 1);
-        }
-        if(q.empty() || i + max_len[i] > q.back().second){
-            q.push({i, i + max_len[i]});
-        }
-    }
-
+    vector<int> ansr = get_maxr(max_len);
     reverse(max_len.begin(), max_len.end());
+    vector<int> ansl = get_maxr(max_len);
+    reverse(ansl.begin(), ansl.end());
 
-    while(!q.empty()) q.pop();
-    for(int i = 0; i < 2 * n + 1; i++){
-        while(!q.empty() && q.front().second < i) q.pop();
-        if(i % 2 == 1){
-            if(q.empty()) ansl[n - (i / 2) - 1] = 1;
-            else ansl[n - (i / 2) - 1] = (i - q.front().first + 1);
-        }
-        if(q.empty() || i + max_len[i] > q.back().second){
-            q.push({i, i + max_len[i]});
-        }
-    }    
+    // ansr[i] : 以 i 為右界的最長回文
+
     // 枚舉相鄰兩項作為第一回文結尾與第二回文頭
     int al = -1, ar = -1;
     for(int i = 0; i < n - 1; i++){
